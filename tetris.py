@@ -26,7 +26,7 @@ C = ti.Matrix.field(dim, dim, dtype=float)  # affine velocity field
 F = ti.Matrix.field(dim, dim, dtype=float)  # deformation gradient
 material = ti.field(dtype=int)  # material id
 Jp = ti.field(dtype=float)  # plastic deformation
-# async mode seems to be slower?
+
 ti.root.dynamic(ti.i, max_num_particles).place(x, v, C, F, material, Jp)
 cur_num_particles = ti.field(ti.i32, shape=())
 
