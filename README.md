@@ -18,6 +18,10 @@ Ideas are from [C4D4U's soft body tetris videos](https://www.youtube.com/watch?v
 python3 tetris.py
 ```
 
+用 *鼠标* 控制下落位置，按 *空格键* 释放。
+
+Use your *mouse* to control the initial horizontal position of the new soft body, and press the *space* key to release it.
+
 ## 未来工作 TODOs
 
 目前功能尚不完善，比如说消除、计分等功能还没有实现。我们俩估计是没时间继续写了，欢迎大家 fork 以后继续开发 :-)
