@@ -40,8 +40,8 @@ def substep():
     for i, j in grid_m:
         grid_v[i, j] = [0, 0]
         grid_m[i, j] = 0
+
     # p2g
-    # for p in range(cur_num_particles[None]):
     for p in x:
         base = (x[p] * inv_dx - 0.5).cast(int)
         fx = x[p] * inv_dx - base.cast(float)
@@ -85,6 +85,7 @@ def substep():
             weight = w[i][0] * w[j][1]
             grid_v[base + offset] += weight * (p_mass * v[p] + affine @ dpos)
             grid_m[base + offset] += weight * p_mass
+
     for i, j in grid_m:
         if grid_m[i, j] > 0:  # No need for epsilon here
             grid_v[i,
@@ -96,8 +97,8 @@ def substep():
             if i > n_grid[0] - 3 and grid_v[i, j][0] > 0: grid_v[i, j][0] = 0
             if j < 3 and grid_v[i, j][1] < 0: grid_v[i, j] = ti.Vector([0, 0])
             if j > n_grid[1] - 3 and grid_v[i, j][1] > 0: grid_v[i, j][1] = 0
+
     # g2p
-    # for p in range(cur_num_particles[None]):
     for p in x:
         base = (x[p] * inv_dx - 0.5).cast(int)
         fx = x[p] * inv_dx - base.cast(float)
