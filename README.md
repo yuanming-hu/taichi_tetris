@@ -5,7 +5,7 @@
 ![teaser](./data/teaser.jpg)
 
 ## 背景简介 Background
-灵感来自[C4D4U的软体俄罗斯方块系列视频](https://www.youtube.com/watch?v=XAoNeNoa7eM&list=PLUiMrVMtq6VFBeBD1jSkkIfAQL4ocoot5).
+灵感来自[C4D4U的软体俄罗斯方块系列视频](https://www.youtube.com/watch?v=XAoNeNoa7eM&list=PLUiMrVMtq6VFBeBD1jSkkIfAQL4ocoot5)。
 
 Ideas are from [C4D4U's soft body tetris videos](https://www.youtube.com/watch?v=XAoNeNoa7eM&list=PLUiMrVMtq6VFBeBD1jSkkIfAQL4ocoot5).
 
