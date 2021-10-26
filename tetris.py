@@ -145,6 +145,10 @@ class StagingTetromino(object):
             [[-1, 0], [1, 0], [0, 1]],
         ])
         self._x_np_canonical = None
+        self.left_width = 0
+        self.right_width = 0
+        self.lower_height = 0
+        self.upper_height = 0
 
     def regenerate(self, mat, kind):
         self.material_idx = mat
@@ -156,8 +160,15 @@ class StagingTetromino(object):
             x[begin:(begin +
                      num_per_tetromino_square)] = self._offsets[kind, (i - 1)]
         x += np.random.rand(*shape)
-        x *= 0.05
+        scaling = 0.05
+        x *= scaling
         self._x_np_canonical = x
+
+        self.left_width= scaling * abs(min(self._offsets[kind, :][:, 0]))
+        self.right_width= scaling * abs(max(self._offsets[kind, :][:, 0]) + 1)
+        self.lower_height = scaling * abs(min(self._offsets[kind, :][:, 1]))
+        self.upper_height = scaling * abs(max(self._offsets[kind, :][:, 1]) + 1)
+        
 
     def update_center(self, center):
         self._x_field.from_numpy(np.clip(self._x_np_canonical + center, 0, 1))
@@ -169,6 +180,21 @@ class StagingTetromino(object):
         x = m @ self._x_np_canonical.T
         self._x_np_canonical = x.T
 
+        self.right_width, self.lower_height, self.left_width, self.upper_height = \
+            self.lower_height, self.left_width, self.upper_height, self.right_width
+
+    def compute_center(self, mouse, l_bound, r_bound):
+        r = staging_tetromino.right_width
+        l = staging_tetromino.left_width
+
+        if mouse[0] + r > r_bound:
+            x = r_bound - r
+        elif mouse[0] - l < l_bound:
+            x = l_bound + l
+        else:
+            x = mouse[0]
+
+        return np.array([x, 0.8], dtype=np.float32)
 
 staging_tetromino = StagingTetromino(staging_tetromino_x)
 
@@ -186,12 +212,6 @@ def drop_staging_tetromino(mat: int):
     cur_num_particles[None] += num_per_tetromino
 
 
-def compute_tetromino_center(mouse):
-    # TODO: better clipping...
-    x = max(min(mouse[0], 0.45), 0.05)
-    return np.array([x, 0.8], dtype=np.float32)
-
-
 def main():
     os.makedirs('frames', exist_ok=True)
     gui = ti.GUI("Taichi MLS-MPM-99",
@@ -206,6 +226,27 @@ def main():
 
     last_action_frame = -1e10
     for f in range(100000):
+        padding = 0.025
+        segments = 20
+        step = (1 - padding * 4) / (segments - 0.5) / 2
+        for i in range(segments):
+            gui.line(begin=(padding * 2 + step * 2 * i, 0.8),
+                     end=(padding * 2 + step * (2 * i + 1), 0.8),
+                     radius=1.5,
+                     color=0xFF8811)
+        gui.line(begin=(padding * 2, padding),
+                 end=(1 - padding * 2, padding),
+                 radius=2)
+        gui.line(begin=(padding * 2, 1 - padding),
+                 end=(1 - padding * 2, 1 - padding),
+                 radius=2)
+        gui.line(begin=(padding * 2, padding),
+                 end=(padding * 2, 1 - padding),
+                 radius=2)
+        gui.line(begin=(1 - padding * 2, padding),
+                 end=(1 - padding * 2, 1 - padding),
+                 radius=2)
+
         if gui.get_event(ti.GUI.PRESS):
             ev_key = gui.event.key
             if ev_key in [ti.GUI.ESCAPE, ti.GUI.EXIT]: break
@@ -220,7 +261,11 @@ def main():
                 staging_tetromino.rotate()
         mouse = gui.get_cursor_pos()
         mouse = (mouse[0] * 0.5, mouse[1])
-        staging_tetromino.update_center(compute_tetromino_center(mouse))
+
+        right_bound = 0.5 - padding
+        left_bound = padding
+        
+        staging_tetromino.update_center(staging_tetromino.compute_center(mouse, left_bound, right_bound))
 
         for s in range(int(2e-3 // dt)):
             substep()
@@ -250,27 +295,7 @@ def main():
                      color=colors[staging_tetromino.material_idx])
         gui.text('Taichi Tetris', (0.07, 0.97), font_size=20)
 
-        padding = 0.025
-        segments = 20
-        step = (1 - padding * 4) / (segments - 0.5) / 2
-        for i in range(segments):
-            gui.line(begin=(padding * 2 + step * 2 * i, 0.8),
-                     end=(padding * 2 + step * (2 * i + 1), 0.8),
-                     radius=1.5,
-                     color=0xFF8811)
-        gui.line(begin=(padding * 2, padding),
-                 end=(1 - padding * 2, padding),
-                 radius=2)
-        gui.line(begin=(padding * 2, 1 - padding),
-                 end=(1 - padding * 2, 1 - padding),
-                 radius=2)
-        gui.line(begin=(padding * 2, padding),
-                 end=(padding * 2, 1 - padding),
-                 radius=2)
-        gui.line(begin=(1 - padding * 2, padding),
-                 end=(1 - padding * 2, 1 - padding),
-                 radius=2)
-
+        
         if write_to_disk:
             gui.show(f'frames/{f:05d}.png')
         else:
